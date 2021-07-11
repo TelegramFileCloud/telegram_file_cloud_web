@@ -1,46 +1,62 @@
 <template>
   <v-container>
+    <input class="input" ref="input" multiple="multiple" type="file" name="file" id="file" @change="inputChange" />
+
     <template>
       <div>
-        <v-responsive max-width="400" class="mx-auto mb-4">
-          <v-text-field v-model="benched" type="number" label="Total Benched" min="0" max="10"></v-text-field>
-        </v-responsive>
-
-        <v-card elevation="16" max-width="400" class="mx-auto">
-          <v-virtual-scroll :bench="benched" :items="items" height="300" item-height="64">
-            <template v-slot:default="{ item }">
-              <v-list-item :key="item">
-                <v-list-item-action>
-                  <v-btn fab small depressed color="primary">
-                    {{ item }}
-                  </v-btn>
-                </v-list-item-action>
-
-                <v-list-item-content>
-                  <v-list-item-title>
-                    User Database Record <strong>ID {{ item }}</strong>
-                  </v-list-item-title>
-                </v-list-item-content>
-
-                <v-list-item-action>
-                  <v-icon small> mdi-open-in-new </v-icon>
-                </v-list-item-action>
-              </v-list-item>
-
-              <v-divider></v-divider>
-            </template>
-          </v-virtual-scroll>
-        </v-card>
+        <v-simple-table>
+          <template v-slot:default>
+            <thead>
+              <tr>
+                <th class="text-left"> 名称 </th>
+                <th class="text-center"> 最后更新 </th>
+                <th class="text-center"> 尺寸 </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="item in fileData" :key="item.id">
+                <td>
+                  <v-icon v-if="item.isDirectory">{{ icon.mdiFolder }}</v-icon>
+                  <v-icon v-else>{{ icon.mdiFile }}</v-icon>
+                  {{ item.name }}
+                </td>
+                <td class="text-center">{{ item.updateTime }}</td>
+                <td class="text-center">{{ item.size || '-' }}</td>
+              </tr>
+            </tbody>
+          </template>
+        </v-simple-table>
       </div>
+
+      <v-speed-dial v-model="fab" bottom right fixed>
+        <template v-slot:activator>
+          <v-btn v-model="fab" fab color="primary" @click="$refs.input.click()">
+            <v-icon v-if="fab">{{ icon.mdiCloudUpload }}</v-icon>
+            <v-icon v-else>{{ icon.mdiPlus }}</v-icon>
+          </v-btn>
+        </template>
+        <v-tooltip left>
+          <template v-slot:activator="{ on }">
+            <v-btn fab small color="primary" v-on="on">
+              <v-icon>{{ icon.mdiFolderPlus }}</v-icon>
+            </v-btn>
+          </template>
+          <span>新建目录</span>
+        </v-tooltip>
+      </v-speed-dial>
     </template>
   </v-container>
 </template>
 
 <script>
+  import vuetify from '@/utils/mixins/vuetify'
+
   export default {
     name: 'Home',
+    mixins: [vuetify],
     data: () => ({
-      benched: 0
+      fileData: [],
+      fab: true
     }),
     computed: {
       items() {
@@ -49,8 +65,49 @@
       length() {
         return 7000
       }
+    },
+    methods: {
+      inputChange(event) {
+        let files = event.target.files
+        console.log(files)
+        let fd = new FormData()
+        files.forEach((file) => {
+          fd.append(file.name, file)
+        })
+
+        fetch('https://localhost:5001/file/upload/1', {
+          method: 'POST',
+          body: fd,
+        })
+          .then((res) => {
+            if (res.ok) {
+              console.log('success')
+              return res.json()
+            } else {
+              console.log('error')
+            }
+          })
+          .then((res) => {
+            console.log('res is', res)
+          })
+      }
+    },
+    mounted() {
+      let url = new URL('https://localhost:5001/file/list')
+      url.searchParams.append('path', '/')
+      fetch(url.toString()).then(async (res) => {
+        if (res.ok) {
+          let data = await res.json()
+          this.fileData = data.response
+          console.log(data)
+        }
+      })
     }
   }
 </script>
 
-<style scoped></style>
+<style scoped lang="scss">
+  .input {
+    visibility: hidden;
+  }
+</style>
