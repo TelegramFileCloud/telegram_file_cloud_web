@@ -11,8 +11,5 @@ export default {
     breakpoint() {
       return this.$vuetify.breakpoint
     }
-  },
-  mounted() {
-    console.log(this.$vuetify)
   }
 }

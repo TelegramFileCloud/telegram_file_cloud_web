@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import Vuetify from 'vuetify/lib/framework'
-import { mdiMagnify, mdiFolder, mdiFile, mdiPlus, mdiCloudUpload,mdiFolderPlus } from '@mdi/js'
+import { mdiMagnify, mdiFolder, mdiFile, mdiPlus, mdiCloudUpload, mdiFolderPlus, mdiContentCopy } from '@mdi/js'
 
 Vue.use(Vuetify)
 
@@ -16,5 +16,6 @@ export const icon = {
   mdiFile,
   mdiPlus,
   mdiCloudUpload,
-  mdiFolderPlus
+  mdiFolderPlus,
+  mdiContentCopy
 }

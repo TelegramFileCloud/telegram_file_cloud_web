@@ -14,15 +14,20 @@
 
     <v-main>
       <router-view />
+      <message />
+      <confirm />
     </v-main>
   </v-app>
 </template>
 
 <script>
   import vuetify from '@/utils/mixins/vuetify'
+  import Message from '@/components/Message'
+  import Confirm from '@/components/Confirm'
 
   export default {
     name: 'App',
+    components: { Confirm, Message },
     mixins: [vuetify],
     data: () => ({
       //

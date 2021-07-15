@@ -1,27 +1,34 @@
 <template>
-  <v-snackbar v-model="show" :timeout="timeout">{{ text }}</v-snackbar>
+  <v-snackbar v-model="show" :color="color" :timeout="timeout">{{ text }}</v-snackbar>
 </template>
 
 <script>
+  import Vue from 'vue'
+
   export default {
     name: 'Message',
     data() {
       return {
         show: false,
         text: '',
-        timeout: 5000
+        timeout: 3000,
+        color: 'success'
       }
     },
     methods: {
-      message(text, timeout = 5000) {
+      message(text, timeout = 3000, color = 'success') {
         if (text) {
           Object.assign(this, {
             show: true,
             text,
-            timeout
+            timeout,
+            color
           })
         }
       }
+    },
+    mounted() {
+      Vue.prototype.$message = this.message
     }
   }
 </script>
