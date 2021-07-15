@@ -56,7 +56,9 @@
     mixins: [vuetify],
     data: () => ({
       fileData: [],
-      fab: true
+      fab: true,
+      // url: 'https://localhost:5001',
+      url: 'https://pan.wuyu.one'
     }),
     computed: {
       items() {
@@ -75,7 +77,7 @@
           fd.append(file.name, file)
         })
 
-        fetch('https://localhost:5001/file/upload/1', {
+        fetch(`${this.url}/file/upload/1`, {
           method: 'POST',
           body: fd,
         })
@@ -93,8 +95,8 @@
       }
     },
     mounted() {
-      let url = new URL('https://localhost:5001/file/list')
-      url.searchParams.append('path', '/')
+      let url = new URL(`${this.url}/file/list`)
+      url.searchParams.append('path', '\\')
       fetch(url.toString()).then(async (res) => {
         if (res.ok) {
           let data = await res.json()
