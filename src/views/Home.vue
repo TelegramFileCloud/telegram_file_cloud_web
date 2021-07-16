@@ -126,10 +126,10 @@
           body: fd
         }).then((res) => {
           if (res.ok) {
-            console.log('success')
+            this.$message('上传成功')
             this.requestList()
           } else {
-            console.log('error')
+            this.$message('上传失败', 3000, 'error')
           }
         })
       },
