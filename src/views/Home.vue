@@ -1,42 +1,50 @@
 <template>
   <v-container>
     <input class="input" ref="input" multiple="multiple" type="file" name="file" id="file" @change="inputChange" />
-
     <template>
-      <div>
-        <v-simple-table>
-          <template v-slot:default>
-            <thead>
-              <tr>
-                <th class="text-left">名称</th>
-                <th class="text-center" style="width: 120px">最后更新</th>
-                <th class="text-center" style="width: 120px">尺寸</th>
-                <th class="text-center" style="width: 100px">操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="item in fileData" :key="item.id">
-                <td @click="clickFile(item)" class="click">
-                  <v-icon v-if="item.isDirectory">{{ icon.mdiFolder }}</v-icon>
-                  <v-icon v-else>{{ icon.mdiFile }}</v-icon>
-                  {{ item.name }}
-                </td>
-                <td class="text-center">{{ item.updateTime }}</td>
-                <td class="text-center">{{ item.size || '-' }}</td>
-                <td class="text-center">
-                  <v-tooltip left>
-                    <template v-slot:activator="{ on }">
-                      <v-btn icon v-on="on" @click="copyLink(item)">
-                        <v-icon>{{ icon.mdiContentCopy }}</v-icon>
-                      </v-btn>
-                    </template>
-                    <span>复制链接</span>
-                  </v-tooltip>
-                </td>
-              </tr>
-            </tbody>
-          </template>
-        </v-simple-table>
+      <v-simple-table>
+        <template v-slot:default>
+          <thead>
+            <tr>
+              <th class="text-left">名称</th>
+              <th class="text-center" style="width: 120px">最后更新</th>
+              <th class="text-center" style="width: 120px">尺寸</th>
+              <th class="text-center" style="width: 100px">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="item in fileData" :key="item.id">
+              <td @click="clickFile(item)" class="click">
+                <v-icon v-if="item.isDirectory">{{ icon.mdiFolder }}</v-icon>
+                <v-icon v-else>{{ icon.mdiFile }}</v-icon>
+                {{ item.name }}
+              </td>
+              <td class="text-center">{{ item.updateTime }}</td>
+              <td class="text-center">{{ item.size || '-' }}</td>
+              <td class="text-center">
+                <v-tooltip left>
+                  <template v-slot:activator="{ on }">
+                    <v-btn icon v-on="on" @click="copyLink(item)">
+                      <v-icon>{{ icon.mdiContentCopy }}</v-icon>
+                    </v-btn>
+                  </template>
+                  <span>复制链接</span>
+                </v-tooltip>
+              </td>
+            </tr>
+          </tbody>
+        </template>
+      </v-simple-table>
+
+      <div v-show="no_data" class="text-center pt-4">
+        <v-img contain height="240" src="@/assets/img/no-data.png" content-class="loading-img">
+          <v-progress-circular
+            v-show="loading"
+            class="loading-progress-circular"
+            indeterminate
+            color="primary"
+          ></v-progress-circular>
+        </v-img>
       </div>
 
       <v-speed-dial open-on-hover v-model="fab" bottom right fixed>
@@ -80,9 +88,10 @@
     name: 'Home',
     mixins: [vuetify],
     data: () => ({
-      fileData: [],
+      fileData: null,
       fab: false,
       showCreat: false,
+      loading: true,
       directoryName: '',
       // url: 'https://localhost:5001',
       url: 'https://pan.wuyu.one',
@@ -91,11 +100,13 @@
     computed: {
       path() {
         return this.$route.query.path || ''
+      },
+      no_data() {
+        return this.fileData === null || this.fileData.length === 0
       }
     },
     watch: {
       '$route.query.path'() {
-        console.log('change')
         this.requestList()
       }
     },
@@ -123,6 +134,10 @@
         })
       },
       requestList() {
+        this.loading = true
+        this.fileData = null
+        this.dirID = null
+
         let url = new URL(`${this.url}/file/list`)
         if (this.path !== '') url.searchParams.append('path', this.path)
         fetch(url.toString()).then(async (res) => {
@@ -131,6 +146,7 @@
             this.fileData = data.response?.list
             this.dirID = data.response?.id
           }
+          this.loading = false
         })
       },
       copyLink(row) {
@@ -141,7 +157,7 @@
       clickFile(row) {
         if (row.isDirectory) {
           this.$router.push({
-            path: 'Home',
+            path: 'home',
             query: {
               path: `${this.path}/${row.name}`
             }
@@ -181,10 +197,19 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    //width: 200px;
   }
 
   ::v-deep {
+    .loading-img {
+      background-color: hsla(0, 0%, 100%, 0.9);
+      top: 20px;
+      transition: opacity 0.3s;
+    }
+
+    .loading-progress-circular {
+      position: absolute;
+      top: 120px;
+    }
     table {
       table-layout: fixed;
     }

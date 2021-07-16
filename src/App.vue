@@ -14,6 +14,7 @@
 
     <v-main>
       <router-view />
+
       <message />
       <confirm />
     </v-main>
@@ -30,7 +31,7 @@
     components: { Confirm, Message },
     mixins: [vuetify],
     data: () => ({
-      //
+      keepAliveView: []
     })
   }
 </script>
