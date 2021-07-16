@@ -9,9 +9,9 @@
             <thead>
               <tr>
                 <th class="text-left">名称</th>
-                <th class="text-center">最后更新</th>
-                <th class="text-center">尺寸</th>
-                <th class="text-center">操作</th>
+                <th class="text-center" style="width: 120px">最后更新</th>
+                <th class="text-center" style="width: 120px">尺寸</th>
+                <th class="text-center" style="width: 100px">操作</th>
               </tr>
             </thead>
             <tbody>
@@ -93,8 +93,16 @@
         return this.$route.query.path || ''
       }
     },
+    watch: {
+      '$route.query.path'() {
+        console.log('change')
+        this.requestList()
+      }
+    },
     methods: {
       inputChange(event) {
+        if (this.dirID == null) return
+
         let files = event.target.files
         console.log(files)
         let fd = new FormData()
@@ -102,13 +110,13 @@
           fd.append(file.name, file)
         })
 
-        fetch(`${this.url}/file/upload/1`, {
+        fetch(`${this.url}/file/upload/${this.dirID}`, {
           method: 'POST',
           body: fd
         }).then((res) => {
           if (res.ok) {
             console.log('success')
-            return res.json()
+            this.requestList()
           } else {
             console.log('error')
           }
@@ -120,8 +128,8 @@
         fetch(url.toString()).then(async (res) => {
           if (res.ok) {
             let data = await res.json()
-            this.fileData = data.response.list
-            this.dirID = data.response.id
+            this.fileData = data.response?.list
+            this.dirID = data.response?.id
           }
         })
       },
@@ -132,7 +140,12 @@
       },
       clickFile(row) {
         if (row.isDirectory) {
-          this.$route.query = this.path
+          this.$router.push({
+            path: 'Home',
+            query: {
+              path: `${this.path}/${row.name}`
+            }
+          })
         }
       },
       creatDirectory() {
@@ -140,10 +153,14 @@
           method: 'POST',
           body: JSON.stringify({
             path: `${this.path}/${this.directoryName}`
-          })
+          }),
+          headers: {
+            'Content-Type': 'application/json'
+          }
         }).then((res) => {
           if (res.ok) {
             this.$message('创建成功')
+            this.requestList()
           }
           this.showCreat = false
         })
@@ -161,5 +178,15 @@
   }
   .click {
     cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    //width: 200px;
+  }
+
+  ::v-deep {
+    table {
+      table-layout: fixed;
+    }
   }
 </style>
